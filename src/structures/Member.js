@@ -33,14 +33,13 @@ class Member extends Base {
         const guild = this.guild;
         if(data.roles) {
             if(guild) {
+                this.roles.clear();
                 for(const role of data.roles) {
                     const r = guild.roles.get(role);
                     if(r) this.roles.set(r.id, r);
                 }
             }
-            else {
-                this.roleIDs = data.roles;
-            }
+            this.roleIDs = data.roles;
         }
         if(data.user) {
             let user = this._client.users.get(data.user.id);
@@ -49,6 +48,7 @@ class Member extends Base {
                 this._client.users.set(user.id, user);
             }
         }
+        this.nick = data.nick;
 
         this.updatePresence(data);
     }

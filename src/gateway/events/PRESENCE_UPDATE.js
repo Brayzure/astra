@@ -12,7 +12,7 @@ module.exports = (client, data) => {
     // Data matches, presence update
     if(compareUserObjectToData(user, data)) {
         const guild = client.guilds.get(data.guild_id);
-        // Guild either isn't available or hasn't be cached yet
+        // Guild either isn't available or hasn't been cached yet
         if(!guild) return;
         const member = guild.members.get(data.user.id);
         let oldMember = null;

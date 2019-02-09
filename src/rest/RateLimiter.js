@@ -70,10 +70,11 @@ class RateLimiter {
     }
 
     updateRoute(route, info) {
-        if(!this.routes[this.getMajorRoute(route)]) {
-            this.routes[this.getMajorRoute(route)] = new Sequence();
+        const majorRoute = this.getMajorRoute(route);
+        if(!this.routes[majorRoute]) {
+            this.routes[majorRoute] = new Sequence();
         }
-        this.routes[this.getMajorRoute(route)].update(info);
+        this.routes[majorRoute].update(info);
     }
 
     getMajorRoute(route) {

@@ -45,8 +45,13 @@ class DiscordWebsocket {
         this.ws.on("close", this.onClose.bind(this));
     }
 
+    sendPacket(opCode, payload) {
+        const packet = { op: opCode, d: payload };
+        this.ws.send(JSON.stringify(packet));
+    }
+
     hello(packet) {
-        this.heartbeatInterval = +packet.d.heartbeat_interval;
+        this.heartbeatInterval = packet.d.heartbeat_interval;
         if(this.heartbeatLoop) clearInterval(this.heartbeatLoop);
         this.heartbeatLoop = setInterval(this.heartbeat.bind(this), this.heartbeatInterval);
         this.heartbeat();
@@ -73,19 +78,17 @@ class DiscordWebsocket {
             large_threshold: 250,
             shard: [ this.shard.id, this.shard.shardCount ]
         };
-        this.ws.send(JSON.stringify({ op: OP_CODES.IDENTIFY, d: payload }));
+        this.sendPacket(OP_CODES.IDENTIFY, payload);
+        //this.ws.send(JSON.stringify({ op: OP_CODES.IDENTIFY, d: payload }));
     }
 
     resume() {
         const payload = {
-            op: OP_CODES.RESUME,
-            d: {
-                seq: this.pausedSequence,
-                token: this._client.fullToken,
-                session_id: this.sessionID
-            }
-        };
-        this.ws.send(JSON.stringify(payload));
+            seq: this.pausedSequence,
+            token: this._client.fullToken,
+            session_id: this.sessionID
+        }
+        this.sendPacket(OP_CODES.RESUME, payload);
     }
 
     reconnect() {
@@ -127,7 +130,7 @@ class DiscordWebsocket {
         this.ws.removeAllListeners();
         // Session is still valid, attempt to resume
         if(code !== 1000 && code !== 4006) {
-            this.pause()
+            this.pause();
         }
         this.initialize();
     }
@@ -155,6 +158,7 @@ class DiscordWebsocket {
                         try {
                             const event = require(`./events/${packet.t}`);
                             this.dispatchEvents[packet.t] = event;
+                            event(this._client, packet.d);
                         }
                         catch (err) {
                             if(!this.unhandledEvents.includes(packet.t)) {
