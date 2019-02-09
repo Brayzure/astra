@@ -1,6 +1,7 @@
+const https = require("https");
+
 const RateLimiter = require("./RateLimiter");
 const Endpoints = require("./Endpoints");
-const https = require("https");
 
 class RequestHandler {
     constructor(auth) {
