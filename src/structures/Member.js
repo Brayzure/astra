@@ -26,6 +26,14 @@ class Member extends Base {
         return user;
     }
 
+    get member() {
+        if(this._cachedMember) return this._cachedMember;
+        if(!this.guild) return null;
+        const member = this.guild.members.get(this.id);
+        if(member) this._cachedMember = member;
+        return member;
+    }
+
     update(data) {
         super.update(data);
         

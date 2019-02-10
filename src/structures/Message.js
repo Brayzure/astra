@@ -31,6 +31,14 @@ class Message extends Base {
         return channel;
     }
 
+    get member() {
+        if(this._cachedMember) return this._cachedMember;
+        if(!this.guild) return null;
+        const member = this.guild.members.get(this.id);
+        if(member) this._cachedMember = member;
+        return member;
+    }
+
     update(data) {
         super.update(data);
         
@@ -53,7 +61,7 @@ class Message extends Base {
                 this.webhookID = data.webhook_id;
             }
             // Only make a member property if we have an author
-            if(this.author && data.member) {
+            if(this.author && data.member && this.guild) {
                 let member = this.guild.members.get(this.author.id);
                 if(!member) {
                     member = new Member(this._client, data.member);
@@ -91,6 +99,7 @@ class Message extends Base {
         }
         this.attachments = data.attachements;
         this.embeds = data.embeds;
+        // TODO: Store reactions better!
         this.reactions = data.reactions || this.reactions;
     }
 }
