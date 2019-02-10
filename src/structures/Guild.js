@@ -61,6 +61,7 @@ class Guild extends Base {
         if(data.hasOwnProperty("systme_channel_id")) this.systemChannelID = data.system_channel_id;
         if(data.joined_at) this.joinedAt = data.joined_at;
         if(data.hasOwnProperty("large")) this.large = data.large;
+        if(data.hasOwnProperty("unavailable")) this.unavailable = data.unavailable;
         if(data.member_count) this.memberCount = data.member_count;
         if(data.members) {
             for(const member of data.members) {

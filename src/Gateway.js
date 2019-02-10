@@ -18,6 +18,7 @@ class GatewayClient extends EventEmitter {
 
         this.shards = new Map();
         this.guilds = new Map();
+        this.unavailableGuilds = new Map();
         this.users = new Map();
         this.channels = new Map();
         this.messages = new Map();

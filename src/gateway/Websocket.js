@@ -116,6 +116,10 @@ class DiscordWebsocket {
     }
 
     ready(packet) {
+        console.log(packet.d.guilds);
+        for(const guild of packet.d.guilds) {
+            this._client.unavailableGuilds.set(guild.id, guild);
+        }
         const d = packet.d;
         this.sessionID = d.session_id;
         this.status = "ready";
