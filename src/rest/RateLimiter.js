@@ -43,8 +43,13 @@ class Sequence {
         while(this.deferred.length && this.remaining) {
             this.remaining--;
             this.deferredFunc = this.deferred.shift();
-            const result = await this.deferredFunc.func();
-            this.deferredFunc.cb(result);
+            try {
+                const result = await this.deferredFunc.func();
+                this.deferredFunc.cb(result);
+            }
+            catch(err) {
+                this.deferredFunc.fcb(err);
+            }
         }
         this.update();
     }
@@ -65,8 +70,8 @@ class RateLimiter {
         return this.routes[majorRoute].consume();
     }
 
-    defer(route, func, cb) {
-        this.routes[this.getMajorRoute(route)].defer({ func, cb });
+    defer(route, func, cb, fcb) {
+        this.routes[this.getMajorRoute(route)].defer({ func, cb, fcb });
     }
 
     updateRoute(route, info) {

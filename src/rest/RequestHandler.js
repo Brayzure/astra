@@ -24,6 +24,39 @@ class RequestHandler {
             function makeRequest(route, options, body) {
                 return new Promise((resolve, reject) => {
                     if(Object.keys(body).length) options.headers["Content-Type"] = "application/json";
+                    const buffers = [];
+                    if(body.file) {
+                        const boundary = "boundary-astra";
+                        if(!Array.isArray(body.file)) {
+                            body.file = [ body.file ];
+                        }
+
+                        let i = 0;
+                        for(const file of body.file) {
+                            if(file instanceof Buffer) {
+                                file = {
+                                    file: body.file
+                                }
+                            }
+                            file.id = "uploadedFile";
+                            options.headers["Content-Type"] = "multipart/form-data; boundary=" + boundary;
+                            let str = `\r\n--${boundary}\r\nContent-Disposition: form-data; name="${file.id}${i}"`;
+                            if(file.name) str += `; filename="${file.name}"`;
+                            str += "\r\nContent-Type: application/octet-stream\r\n\r\n";
+                            buffers.push(Buffer.from(str));
+                            buffers.push(file.file);
+                            i++;
+                        }
+                        
+                        delete body.file;
+                        if(Object.keys(body).length) {
+                            let str = `\r\n--${boundary}\r\nContent-Disposition: form-data; name="payload_json"`;
+                            str += "\r\nContent-Type: application/json\r\n\r\n";
+                            buffers.push(Buffer.from(str));
+                            buffers.push(Buffer.from(JSON.stringify(body)));
+                        }
+                        buffers.push(Buffer.from(`\r\n--${boundary}--`));
+                    }
                     const req = https.request(options, (res) => {
                         const ratelimitInfo = {};
                         if(res.headers["x-ratelimit-limit"]) ratelimitInfo.limit = +res.headers["x-ratelimit-limit"];
@@ -31,26 +64,39 @@ class RequestHandler {
                         if(res.headers["x-ratelimit-reset"]) ratelimitInfo.reset = +res.headers["x-ratelimit-reset"];
                         this.rateLimiter.updateRoute(route, ratelimitInfo);
                         const chunks = [];
+
+                        res.on("error", reject);
                         res.on("data", (chunk) => {
                             chunks.push(chunk);
                         });
                         res.on("end", () => {
-                            //console.log(chunks);
-                            //console.log(chunks.toString());
-                            resolve(JSON.parse(Buffer.concat(chunks).toString()));
+                           const response = JSON.parse(Buffer.concat(chunks).toString());
+                            if(res.statusCode >= 300) {
+                                const err = new Error(response.message);
+                                if(response.code) err.code = response.code;
+                                return reject(err);
+                            }
+                            return resolve(response);
                         });
                     });
-                    if(Object.keys(body).length) req.write(JSON.stringify(body));
+                    if(buffers.length) {
+                        for(const buf of buffers) {
+                            req.write(buf);
+                        }
+                    }
+                    else if(Object.keys(body).length) {
+                        req.write(JSON.stringify(body));
+                    }
                     req.end();
                 });
             }
             const boundFunction = makeRequest.bind(this, route, options, body);
             const valid = this.rateLimiter.consume(route);
             if(valid) {
-                boundFunction().then(result => resolve(result));
+                boundFunction().then(resolve, reject);
             }
             else {
-                this.rateLimiter.defer(route, boundFunction, (r) => resolve(r));
+                this.rateLimiter.defer(route, boundFunction, resolve, reject);
             }
         })
     }
