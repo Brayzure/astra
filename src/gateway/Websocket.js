@@ -138,7 +138,6 @@ class DiscordWebsocket {
                 guild.chunked = true;
             }
         }
-        console.log(ids);
         if(ids.length) {
             const payload = {
                 guild_id: ids,
