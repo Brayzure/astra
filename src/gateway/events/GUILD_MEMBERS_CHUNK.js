@@ -15,4 +15,7 @@ module.exports = (client, data) => {
             guild.members.set(m.id, m);
         }
     }
+    // If guild.memberCount is lower than the cache size,
+    // trust the cache size
+    if(data.members.length < 1000 && guild.memberCount !== guild.members.size) guild.memberCount = guild.members.size;
 }

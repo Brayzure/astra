@@ -28,6 +28,10 @@ class Guild extends Base {
         return this.channels.get(this.afkChannelID);
     }
 
+    get fullyChunked() {
+        return this.memberCount == this.members.size;
+    }
+
     update(data) {
         super.update(data);
 
