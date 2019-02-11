@@ -25,9 +25,7 @@ class GatewayClient extends EventEmitter {
 
         this.textChannelCount = 0;
 
-        if(options.packetData) {
-            this.packetData = true;
-        }
+        this.options = options;
     }
 
     async spawnShards() {

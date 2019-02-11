@@ -119,10 +119,37 @@ class DiscordWebsocket {
         for(const guild of packet.d.guilds) {
             this._client.unavailableGuilds.set(guild.id, guild);
         }
+        if(this._client.options.getAllMembers) {
+            if(this.guildMembersChunkTimeout) clearTimeout(this.guildMembersChunkTimeout);
+            this.requestGuildMembers();
+        }
         const d = packet.d;
         this.sessionID = d.session_id;
         this.status = "ready";
         this._client.emit("ready");
+    }
+
+    requestGuildMembers() {
+        let ids = [];
+        let unchunked = 0;
+        for(const guild of this._client.guilds.values()) {
+            if(!guild.chunked) {
+                ids.push(guild.id);
+                guild.chunked = true;
+            }
+        }
+        console.log(ids);
+        if(ids.length) {
+            const payload = {
+                guild_id: ids,
+                query: "",
+                limit: 0
+            };
+            this.sendPacket(OP_CODES.REQUEST_MEMBERS, payload);
+        }
+        if(this._client.unavailableGuilds.size) {
+            this.guildMembersChunkTimeout = setTimeout(this.requestGuildMembers.bind(this), 1000);
+        }
     }
 
     heartbeat() {

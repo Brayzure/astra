@@ -5,7 +5,7 @@ class Base {
     }
 
     update(data) {
-        if(this._client.packetData) this.data = data;
+        if(this._client.options.packetData) this.data = data;
     }
 
     clone() {

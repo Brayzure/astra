@@ -15,6 +15,8 @@ class Guild extends Base {
         this.roles = new Map();
         this.members = new Map();
 
+        this.chunked = false;
+
         this.update(data);
     }
 
@@ -99,6 +101,7 @@ class Guild extends Base {
                 this.members.get(presence.user.id).updatePresence(presence);
             }
         }
+        if(data.voice_server) this.voiceServer = data.voice_server;
     }
 }
 

@@ -1,5 +1,3 @@
-const Message = require("../../structures/Message");
-
 // TODO: Remove reaction from message
 module.exports = (client, data) => {
     let message = client.messages.get(data.message_id);
