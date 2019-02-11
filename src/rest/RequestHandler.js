@@ -37,7 +37,7 @@ class RequestHandler {
                         res.on("end", () => {
                             //console.log(chunks);
                             //console.log(chunks.toString());
-                            resolve(JSON.parse(chunks.toString()));
+                            resolve(JSON.parse(Buffer.concat(chunks).toString()));
                         });
                     });
                     if(Object.keys(body).length) req.write(JSON.stringify(body));
