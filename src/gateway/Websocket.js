@@ -131,7 +131,6 @@ class DiscordWebsocket {
 
     requestGuildMembers() {
         let ids = [];
-        let unchunked = 0;
         for(const guild of this._client.guilds.values()) {
             if(!guild.chunked) {
                 ids.push(guild.id);

@@ -9,9 +9,10 @@ module.exports = (client, data) => {
         }
         else {
             member.guild_id = data.guild_id;
+            member.id = member.user.id;
             m = new Member(client, member);
             m.resolveRoles(guild);
-            guild.members.set(member.id, member);
+            guild.members.set(m.id, m);
         }
     }
 }
