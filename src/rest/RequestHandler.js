@@ -23,7 +23,7 @@ class RequestHandler {
             };
             function makeRequest(route, options, body) {
                 return new Promise((resolve, reject) => {
-                    if(Object.keys(body).length) options.headers["Content-Type"] = "application/json";
+                    if(Object.keys(body).length || options.method === "POST") options.headers["Content-Type"] = "application/json";
                     const buffers = [];
                     if(body.file) {
                         const boundary = "boundary-astra";
@@ -70,9 +70,11 @@ class RequestHandler {
                             chunks.push(chunk);
                         });
                         res.on("end", () => {
-                           const response = JSON.parse(Buffer.concat(chunks).toString());
+                            if(!chunks.length) return resolve();
+                            const response = JSON.parse(Buffer.concat(chunks).toString());
                             if(res.statusCode >= 300) {
-                                const err = new Error(response.message);
+                                console.log(response);
+                                const err = response.message ? new Error(response.message) : new Error(response);
                                 if(response.code) err.code = response.code;
                                 return reject(err);
                             }
@@ -84,7 +86,7 @@ class RequestHandler {
                             req.write(buf);
                         }
                     }
-                    else if(Object.keys(body).length) {
+                    else {
                         req.write(JSON.stringify(body));
                     }
                     req.end();

@@ -28,6 +28,7 @@ module.exports.CHANNEL_MESSAGES = (channelID) => `/channels/${channelID}/message
 module.exports.CHANNEL_MESSAGE = (channelID, messageID) => `/channels/${channelID}/messages/${messageID}`;
 module.exports.CHANNEL_REACTION = (channelID, messageID, emoji, user="@me") => `/channels/${channelID}/messages/${messageID}/reactions/${emoji}/${user}`;
 module.exports.CHANNEL_REACTIONS = (channelID, messageID, emoji) => `/channels/${channelID}/messages/${messageID}/reactions/${emoji}`;
+module.exports.CHANNEL_REACTIONS_DELETE = (channelID, messageID) => `/channels/${channelID}/messages/${messageID}/reactions`;
 module.exports.CHANNEL_BULK_DELETE = (channelID) => `/channels/${channelID}/messages/bulk-delete`;
 module.exports.CHANNEL_PERMISSIONS = (channelID, overwriteID) => `/channels/${channelID}/permissions/${overwriteID}`;
 module.exports.CHANNEL_INVITES = (channelID) => `/channels/${channelID}/invites`;
