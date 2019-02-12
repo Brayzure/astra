@@ -299,9 +299,64 @@ class GatewayClient extends EventEmitter {
         await this.requestHandler.request("DELETE", Endpoints.GUILD_ROLE(guildID, roleID));
     }
 
+    async getPruneCount(guildID, days) {
+        const pruneCount = await this.requestHandler.request("GET", Endpoints.GUILD_PRUNE(guildID), { days });
+        return pruneCount.pruned;
+    }
+
+    async prune(guildID, days, computePruneCount=true) {
+        const pruneCount = await this.requestHandler.request("GET", Endpoints.GUILD_PRUNE(guildID), { days, compute_prune_count: computePruneCount });
+        return pruneCount.pruned;
+    }
+
     async getVoiceRegions() {
         const regions = await this.requestHandler.request("GET", Endpoints.VOICE_REGIONS);
         return regions;
+    }
+
+    async getGuildInvites(guildID) {
+        const invites = await this.requestHandler.request("GET", Endpoints.GUILD_INVITES(guildID));
+        const inviteArray = [];
+        for(const invite of invites) {
+            inviteArray.push(new Invite(this, invite));
+        }
+        return inviteArray;
+    }
+
+    async getIntegrations(guildID) {
+        const integrations = await this.requestHandler.request("GET", Endpoints.GUILD_INTEGRATIONS(guildID));
+        return integrations;
+    }
+
+    async addIntegration(guildID, options={}) {
+        await this.requestHandler.request("POST", Endpoints.GUILD_INTEGRATIONS(guildID), options);
+    }
+
+    async editIntegration(guildID, intID, options={}) {
+        await this.requestHandler.request("PATCH", Endpoints.GUILD_INTEGRATION(guildID, intID), options);
+    }
+
+    async deleteIntegration(guildID, intID) {
+        await this.requestHandler.request("DELETE", Endpoints.GUILD_INTEGRATION(guildID, intID));
+    }
+
+    async syncIntegration(guildID, intID) {
+        await this.requestHandler.request("POST", Endpoints.GUILD_INTEGRATION_SYNC(guildID, intID));
+    }
+
+    async getGuildEmbed(guildID) {
+        const embed = await this.requestHandler.request("GET", Endpoints.GUILD_EMBED(guildID));
+        return embed;
+    }
+
+    async editGuildEmbed(guildID, options={}) {
+        const embed = await this.requestHandler.request("PATCH", Endpoints.GUILD_EMBED(guildID), options);
+        return embed;
+    }
+
+    async getVanityCode(guildID) {
+        const { code } = await this.requestHandler.request("GET", Endpoints.GUILD_VANITY(guildID));
+        return code;
     }
 
     async getGateway(bot=true) {

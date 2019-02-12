@@ -57,7 +57,7 @@ class RequestHandler {
                         }
                         buffers.push(Buffer.from(`\r\n--${boundary}--`));
                     }
-                    if(Object.keys(body).length && (options.method === "GET" || (options.method === "PUT" && options.path.match(/\/guilds\/\d+\/bans\/\d+/i)))) {
+                    if(Object.keys(body).length && (options.method === "GET" || (options.method === "PUT" && options.path.match(/\/guilds\/\d+\/bans\/\d+/i)) || (options.method === "POST" && options.path.match(/\/guilds\/\d+\/prune/i)))) {
                         const qs = Object.entries(body).map(e => `${e[0]}=${encodeURIComponent(e[1])}`).join("&");
                         options.path += "?" + qs;
                         body = {};
