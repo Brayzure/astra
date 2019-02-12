@@ -38,6 +38,7 @@ module.exports.CHANNEL_PIN = (channelID, messageID) => `/channels/${channelID}/p
 module.exports.CHANNEL_RECIPIENT = (channelID, userID) => `/channels/${channelID}/recipients/${userID}`;
 
 // GUILD ENDPOINTS
+module.exports.GUILDS = "/guilds";
 module.exports.GUILD = (guildID) => `/guilds/${guildID}`;
 module.exports.GUILD_EMOJIS = (guildID) => `/guilds/${guildID}/emojis`;
 module.exports.GUILD_EMOJI = (guildID, emojiID) => `/guilds/${guildID}/emojis/${emojiID}`;

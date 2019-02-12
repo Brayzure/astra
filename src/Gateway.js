@@ -9,6 +9,7 @@ const Channel = require("./structures/Channel");
 const Message = require("./structures/Message");
 const User = require("./structures/User");
 const Invite = require("./structures/Invite");
+const Guild = require("./structures/Guild");
 
 class GatewayClient extends EventEmitter {
     constructor(token, options={}) {
@@ -162,6 +163,25 @@ class GatewayClient extends EventEmitter {
 
     async unpinMessage(channelID, messageID) {
         await this.requestHandler.request("DELETE", Endpoints.CHANNEL_PIN(channelID, messageID));
+    }
+
+    async createGuild(options={}) {
+        const guild = await this.requestHandler.request("POST", Endpoints.GUILDS, options);
+        return new Guild(this, guild);
+    }
+
+    async editGuild(guildID, options={}) {
+        const guild = await this.requestHandler.request("PATCH", Endpoints.GUILD(guildID), options);
+        return new Guild(this, guild);
+    }
+
+    async deleteGuild(guildID) {
+        await this.requestHandler.request("DELETE", Endpoints.GUILD(guildID));
+    }
+
+    async getVoiceRegions() {
+        const regions = await this.requestHandler.request("GET", Endpoints.VOICE_REGIONS);
+        return regions;
     }
 
     async getGateway(bot=true) {

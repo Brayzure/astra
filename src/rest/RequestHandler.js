@@ -73,8 +73,8 @@ class RequestHandler {
                             if(!chunks.length) return resolve();
                             const response = JSON.parse(Buffer.concat(chunks).toString());
                             if(res.statusCode >= 300) {
-                                console.log(response);
-                                const err = response.message ? new Error(response.message) : new Error(response);
+                                console.log(res.statusCode);
+                                const err = response.message ? new Error(response.message) : response;
                                 if(response.code) err.code = response.code;
                                 return reject(err);
                             }
