@@ -10,6 +10,8 @@ const Message = require("./structures/Message");
 const User = require("./structures/User");
 const Invite = require("./structures/Invite");
 const Guild = require("./structures/Guild");
+const Member = require("./structures/Member");
+const Role = require("./structures/Role");
 
 class GatewayClient extends EventEmitter {
     constructor(token, options={}) {
@@ -177,6 +179,124 @@ class GatewayClient extends EventEmitter {
 
     async deleteGuild(guildID) {
         await this.requestHandler.request("DELETE", Endpoints.GUILD(guildID));
+    }
+
+    async getChannels(guildID) {
+        const channels = await this.requestHandler.request("GET", Endpoints.GUILD_CHANNELS(guildID));
+        const channelArray = [];
+        for(const channel of channels) {
+            channelArray.push(Channel.AutoChannel(this, channel));
+        }
+        return channelArray;
+    }
+
+    async createChannel(guildID, options={}) {
+        const channel = await this.requestHandler.request("POST", Endpoints.GUILD_CHANNELS(guildID), options);
+        return new Channel.AutoChannel(this, channel);
+    }
+
+    async editChannelPosition(guildID, channels=[]) {
+        await this.requestHandler.request("PATCH", Endpoints.GUILD_CHANNELS(guildID), channels);
+    }
+
+    async getMember(guildID, memberID) {
+        const member = await this.requestHandler.request("GET", Endpoints.GUILD_MEMBER(guildID, memberID));
+        member.guild_id = guildID;
+        member.id = memberID;
+        const newMember = new Member(this, member);
+        delete newMember.presence;
+        return newMember;
+    }
+
+    async getMembers(guildID, options={}) {
+        const members = await this.requestHandler.request("GET", Endpoints.GUILD_MEMBERS(guildID), options);
+        console.log(members.length);
+        const memberArray = [];
+        for(const member of members) {
+            member.guild_id = guildID;
+            member.id = member.user.id;
+            const newMember = new Member(this, member);
+            delete newMember.presence;
+            memberArray.push(newMember);
+        }
+        return memberArray;
+    }
+
+    async editMember(guildID, memberID, options={}) {
+        await this.requestHandler.request("PATCH", Endpoints.GUILD_MEMBER(guildID, memberID), options);
+    }
+
+    async editNickname(guildID, nick) {
+        await this.requestHandler.request("PATCH", Endpoints.GUILD_NICKNAME(guildID), { nick });
+    }
+
+    async addRole(guildID, memberID, roleID) {
+        await this.requestHandler.request("PUT", Endpoints.GUILD_MEMBER_ROLE(guildID, memberID, roleID));
+    }
+
+    async removeRole(guildID, memberID, roleID) {
+        await this.requestHandler.request("DELETE", Endpoints.GUILD_MEMBER_ROLE(guildID, memberID, roleID));
+    }
+
+    async kickMember(guildID, memberID) {
+        await this.requestHandler.request("DELETE", Endpoints.GUILD_MEMBER(guildID, memberID));
+    }
+
+    async getBans(guildID) {
+        const bans = await this.requestHandler.request("GET", Endpoints.GUILD_BANS(guildID));
+        for(const ban of bans) {
+            ban.user = new User(this, ban.user);
+        }
+        return bans;
+    }
+
+    async getBan(guildID, memberID) {
+        const ban = await this.requestHandler.request("GET", Endpoints.GUILD_BAN(guildID, memberID));
+        ban.user = new User(this, ban.user);
+        return ban;
+    }
+
+    async banMember(guildID, memberID, options={}) {
+        await this.requestHandler.request("PUT", Endpoints.GUILD_BAN(guildID, memberID), options);
+    }
+
+    async unbanMember(guildID, memberID) {
+        await this.requestHandler.request("DELETE", Endpoints.GUILD_BAN(guildID, memberID));
+    }
+
+    async getGuildRoles(guildID) {
+        const roles = await this.requestHandler.request("GET", Endpoints.GUILD_ROLES(guildID));
+        const roleArray = [];
+        for(const role of roles) {
+            role.guild_id = guildID;
+            roleArray.push(new Role(this, role));
+        }
+        return roleArray;
+    }
+
+    async createRole(guildID, options={}) {
+        const role = await this.requestHandler.request("POST", Endpoints.GUILD_ROLES(guildID), options);
+        return new Role(this, role);
+    }
+
+    async editRolePositions(guildID, options=[]) {
+        const roles = await this.requestHandler.request("PATCH", Endpoints.GUILD_ROLES(guildID), options);
+        const roleArray = [];
+        for(const role of roles) {
+            role.guild_id = guildID;
+            roleArray.push(new Role(this, role));
+        }
+        return roles;
+    }
+
+    async editRole(guildID, roleID, options={}) {
+        const role = await this.requestHandler.request("PATCH", Endpoints.GUILD_ROLE(guildID, roleID), options);
+        role.guild_id = guildID;
+        return new Role(this, role);
+    }
+
+    async deleteRole(guildID, roleID) {
+        await this.requestHandler.request("DELETE", Endpoints.GUILD_ROLE(guildID, roleID));
     }
 
     async getVoiceRegions() {

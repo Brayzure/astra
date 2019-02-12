@@ -57,6 +57,11 @@ class RequestHandler {
                         }
                         buffers.push(Buffer.from(`\r\n--${boundary}--`));
                     }
+                    if(Object.keys(body).length && (options.method === "GET" || (options.method === "PUT" && options.path.match(/\/guilds\/\d+\/bans\/\d+/i)))) {
+                        const qs = Object.entries(body).map(e => `${e[0]}=${encodeURIComponent(e[1])}`).join("&");
+                        options.path += "?" + qs;
+                        body = {};
+                    }
                     const req = https.request(options, (res) => {
                         const ratelimitInfo = {};
                         if(res.headers["x-ratelimit-limit"]) ratelimitInfo.limit = +res.headers["x-ratelimit-limit"];
