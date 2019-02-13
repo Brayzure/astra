@@ -9,6 +9,8 @@ class CategoryChannel extends Base {
 
     update(data) {
         super.update(data);
+        
+        if(data.hasOwnProperty("type")) this.type = data.type;
 
         if(data.guild_id) this.guildID = data.guild_id;
         if(data.hasOwnProperty("position")) this.position = data.position;

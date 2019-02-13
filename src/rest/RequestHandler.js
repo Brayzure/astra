@@ -62,6 +62,11 @@ class RequestHandler {
                         options.path += "?" + qs;
                         body = {};
                     }
+                    if(options.method === "POST" && options.path.match(/\/webhooks\/\d+/i)) {
+                        if(body.hasOwnProperty("wait")) {
+                            options.path += "?wait=" + encodeURIComponent(body.wait);
+                        }
+                    }
                     const req = https.request(options, (res) => {
                         const ratelimitInfo = {};
                         if(res.headers["x-ratelimit-limit"]) ratelimitInfo.limit = +res.headers["x-ratelimit-limit"];

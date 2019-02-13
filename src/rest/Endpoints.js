@@ -76,7 +76,7 @@ module.exports.VOICE_REGIONS = "/voice/regions";
 
 // WEBHOOK ENDPOINTS
 module.exports.CHANNEL_WEBHOOKS = (channelID) => `/channels/${channelID}/webhooks`;
-module.exports.GUILD_WEBHOOKS = (guildID) => `/channels/${guildID}/webhooks`;
+module.exports.GUILD_WEBHOOKS = (guildID) => `/guilds/${guildID}/webhooks`;
 module.exports.WEBHOOK = (webID) => `/webhooks/${webID}`;
 module.exports.TOKEN_WEBHOOK = (webID, token) => `/webhooks/${webID}/${token}`;
 module.exports.SLACK_WEBHOOK = (webID, token) => `/webhooks/${webID}/${token}/slack`;

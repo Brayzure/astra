@@ -12,6 +12,8 @@ const Invite = require("./structures/Invite");
 const Guild = require("./structures/Guild");
 const Member = require("./structures/Member");
 const Role = require("./structures/Role");
+const Webhook = require("./structures/Webhook");
+const Emoji = require("./structures/Emoji");
 
 class GatewayClient extends EventEmitter {
     constructor(token, options={}) {
@@ -357,6 +359,141 @@ class GatewayClient extends EventEmitter {
     async getVanityCode(guildID) {
         const { code } = await this.requestHandler.request("GET", Endpoints.GUILD_VANITY(guildID));
         return code;
+    }
+
+    async getGuildWidget(guildID, style="shield") {
+        const image = await this.requestHandler.request("GET", Endpoints.GUILD_WIDGET(guildID), { style });
+        return image;
+    }
+
+    async getUser(userID="@me") {
+        const user = await this.requestHandler.request("GET", Endpoints.USER(userID));
+        return new User(this, user);
+    }
+
+    async editUser(options={}) {
+        const user = await this.requestHandler.request("PATCH", Endpoints.USER(), options);
+        return new User(this, user);
+    }
+
+    async getGuilds(options={}) {
+        const guilds = await this.requestHandler.request("GET", Endpoints.USER_GUILDS(), options);
+        const guildArray = [];
+        for(const guild of guilds) {
+            guildArray.push(new Guild(this, guild));
+        }
+        return guildArray;
+    }
+
+    async leaveGuild(guildID) {
+        await this.requestHandler.request("DELETE", Endpoints.USER_GUILD(guildID));
+    }
+
+    async openDM(userID) {
+        const channel = await this.requestHandler.request("POST", Endpoints.USER_CHANNELS(), { recipient_id: userID });
+        return Channel.AutoChannel(this, channel);
+    }
+
+    async createWebhook(channelID, name, avatar) {
+        const webhook = await this.requestHandler.request("POST", Endpoints.CHANNEL_WEBHOOKS(channelID), { name, avatar });
+        const webhookInstance = new Webhook(this, webhook);
+        if(!this.users.has(webhook.user.id)) {
+            const newUser = new User(this, webhook.user);
+            this.users.set(newUser.id, newUser);
+        }
+        return webhookInstance;
+    }
+
+    async getChannelWebhooks(channelID) {
+        const webhooks = await this.requestHandler.request("GET", Endpoints.CHANNEL_WEBHOOKS(channelID));
+        const webhookArray = [];
+        for(const webhook of webhooks) {
+            if(!this.users.has(webhook.user.id)) {
+                const newUser = new User(this, webhook.user);
+                this.users.set(newUser.id, newUser);
+            }
+            webhookArray.push(new Webhook(this, webhook));
+        }
+        return webhookArray;
+    }
+
+    async getGuildWebhooks(guildID) {
+        const webhooks = await this.requestHandler.request("GET", Endpoints.GUILD_WEBHOOKS(guildID));
+        const webhookArray = [];
+        for(const webhook of webhooks) {
+            if(!this.users.has(webhook.user.id)) {
+                const newUser = new User(this, webhook.user);
+                this.users.set(newUser.id, newUser);
+            }
+            webhookArray.push(new Webhook(this, webhook));
+        }
+        return webhookArray;
+    }
+
+    async getWebhook(id, token="") {
+        let webhook;
+        if(token) webhook = await this.requestHandler.request("GET", Endpoints.TOKEN_WEBHOOK(id, token));
+        else webhook = await this.requestHandler.request("GET", Endpoints.WEBHOOK(id));
+        return new Webhook(this, webhook);
+    }
+
+    async editWebhook(id, options={}) {
+        let webhook;
+        if(options.token) webhook = await this.requestHandler.request("PATCH", Endpoints.TOKEN_WEBHOOK(id, options.token), options);
+        else webhook = await this.requestHandler.request("PATCH", Endpoints.WEBHOOK(id), options);
+        return new Webhook(this, webhook);        
+    }
+
+    async deleteWebhook(id, token="") {
+        if(token) await this.requestHandler.request("DELETE", Endpoints.TOKEN_WEBHOOK(id, token));
+        else await this.requestHandler.request("DELETE", Endpoints.WEBHOOK(id));
+    }
+
+    async executeWebhook(id, token, options={}) {
+        const response = await this.requestHandler.request("POST", Endpoints.TOKEN_WEBHOOK(id, token), options);
+        if(options.wait) return new Message(this, response);
+        return response;
+    }
+
+    async getGuildEmojis(guildID) {
+        const emojis = await this.requestHandler.request("GET", Endpoints.GUILD_EMOJIS(guildID));
+        const emojiArray = [];
+        for(const emoji of emojis) {
+            const emojiInstance = new Emoji(this, emoji);
+            if(emoji.user && !this.users.has(emoji.user.id)) {
+                this.users.set(emoji.user.id, new User(this, emoji.user));
+            }
+            emojiArray.push(emojiInstance);
+        }
+        return emojiArray;
+    }
+
+    async getGuildEmoji(guildID, emojiID) {
+        const emoji = await this.requestHandler.request("GET", Endpoints.GUILD_EMOJI(guildID, emojiID));
+        if(emoji.user && !this.users.has(emoji.user.id)) {
+            this.users.set(emoji.user.id, new User(this, emoji.user));
+        }
+        return new Emoji(this, emoji);
+    }
+
+    async createGuildEmoji(guildID, options={}) {
+        const emoji = await this.requestHandler.request("POST", Endpoints.GUILD_EMOJIS(guildID), options);
+        if(emoji.user && !this.users.has(emoji.user.id)) {
+            this.users.set(emoji.user.id, new User(this, emoji.user));
+        }
+        return new Emoji(this, emoji);
+    }
+
+    async editGuildEmoji(guildID, emojiID, options={}) {
+        const emoji = await this.requestHandler.request("PATCH", Endpoints.GUILD_EMOJI(guildID, emojiID), options);
+        if(emoji.user && !this.users.has(emoji.user.id)) {
+            this.users.set(emoji.user.id, new User(this, emoji.user));
+        }
+        return new Emoji(this, emoji);
+    }
+
+    async editGuildEmoji(guildID, emojiID) {
+        await this.requestHandler.request("DELETE", Endpoints.GUILD_EMOJI(guildID, emojiID));
     }
 
     async getGateway(bot=true) {

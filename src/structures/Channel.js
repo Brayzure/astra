@@ -17,8 +17,6 @@ class Channel extends Base {
 
     update(data) {
         super.update(data);
-        
-        if(data.hasOwnProperty("type")) this.type = data.type;
     }
 }
 
