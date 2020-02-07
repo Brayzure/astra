@@ -23,7 +23,7 @@ class GatewayClient extends EventEmitter {
         this.fullToken = "Bot " + this.token;
 
         this.requestHandler = new RequestHandler(this.fullToken);
-        this.identifyRateLimiter = new Sequence(1, 2);
+        this.identifyRateLimiter = new Sequence(1, 5);
         this.shardCount = options.shardCount || 1;
 
         this.shards = new Map();
