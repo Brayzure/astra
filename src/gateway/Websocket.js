@@ -76,7 +76,8 @@ class DiscordWebsocket {
             },
             compress: false,
             large_threshold: 250,
-            shard: [ this.shard.id, this.shard.shardCount ]
+            shard: [ this.shard.id, this.shard.shardCount ],
+            intents: this._client.intents
         };
         this.sendPacket(OP_CODES.IDENTIFY, payload);
         //this.ws.send(JSON.stringify({ op: OP_CODES.IDENTIFY, d: payload }));
@@ -165,6 +166,7 @@ class DiscordWebsocket {
 
     onEvent(packet) {
         packet = JSON.parse(packet);
+        this._client.emit("ws", packet);
         if(packet.op === OP_CODES.HELLO) this.hello(packet);
         if(packet.op === OP_CODES.HEARTBEAT) this.heartbeat();
         if(packet.op === OP_CODES.INVALIDATE_SESSION) this.invalidate(packet);

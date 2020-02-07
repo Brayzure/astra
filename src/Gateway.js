@@ -4,6 +4,7 @@ const RequestHandler = require("./rest/RequestHandler");
 const Endpoints = require("./rest/Endpoints");
 const { Sequence } = require("./rest/RateLimiter");
 const Shard = require("./gateway/Shard");
+const Constants = require("./Constants");
 
 const Channel = require("./structures/Channel");
 const Message = require("./structures/Message");
@@ -16,7 +17,7 @@ const Webhook = require("./structures/Webhook");
 const Emoji = require("./structures/Emoji");
 
 class GatewayClient extends EventEmitter {
-    constructor(token, options={}) {
+    constructor(token, intents, options={}) {
         super();
         this.token = token || process.env.DISCORD_BOT_TOKEN;
         if(!this.token) throw new Error("No token supplied");
@@ -35,7 +36,27 @@ class GatewayClient extends EventEmitter {
 
         this.textChannelCount = 0;
 
+        if(typeof intents === "object" && !Array.isArray(intents)) {
+            options = intents;
+            intents = 0;
+        }
+
         this.options = options;
+
+        if(Array.isArray(intents)) {
+            let bitMask = 0;
+            for(const intent of intents) {
+                if(Constants.Intents[intent]) {
+                    console.log(Constants.Intents[intent]);
+                    bitMask |= Constants.Intents[intent];
+                }
+            }
+            this.intents = bitMask;
+        }
+        if(typeof intents === "number") {
+            this.intents = intents;
+        }
+        console.log(this.intents);
     }
 
     async spawnShards() {
